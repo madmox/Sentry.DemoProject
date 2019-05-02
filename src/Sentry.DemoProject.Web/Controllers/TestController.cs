@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO.Compression;
+using System.Threading.Tasks;
 
 namespace Sentry.DemoProject.Web.Controllers
 {
@@ -18,11 +19,19 @@ namespace Sentry.DemoProject.Web.Controllers
 
         [HttpPost]
         [Route(@"")]
-        public IActionResult UnpackZipFile()
+        public async Task<IActionResult> UnpackZipFile()
         {
             try
             {
                 int entriesCount = 0;
+                var buffer = new byte[1024];
+                var re = 0;
+                do
+                {
+                    re = await this.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+                } while (re > 0);
+                this.Request.Body.Position = 0;
+
                 using (var zip = new ZipArchive(this.Request.Body))
                 {
                     entriesCount = zip.Entries.Count;
